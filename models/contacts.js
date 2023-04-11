@@ -8,13 +8,13 @@ async function readFile() {
   const data = await fs.readFile(contactsPath, "utf8");
 
   return JSON.parse(data);
-};
+}
 
 async function writeFile(contacts) {
   await fs.writeFile(contactsPath, JSON.stringify(contacts), "utf8");
 
   return contacts;
-};
+}
 
 async function listContacts() {
   const listContacts = await readFile();
@@ -30,13 +30,18 @@ const getById = async (contactId) => {
 };
 
 const removeContact = async (contactId) => {
-  const contact = await readFile().filter(
-    (contact) => contact.id !== contactId
-  );
+  const contacts = await readFile();
 
-  const newContacts = await writeFile(contact);
+  const index = contacts.findIndex(contact => contact.id === contactId);
+  if (index === -1) {
+    return null;
+  }
 
-  return newContacts;
+    const [result] = contacts.splice(index, 1);
+
+    await writeFile(contacts);
+
+    return result;
 };
 
 const addContact = async (body) => {
@@ -51,10 +56,23 @@ const addContact = async (body) => {
 
   await writeFile(contacts);
 
-  return contacts;
+  return newContacts;
 };
 
-const updateContact = async (contactId, body) => {};
+const updateContact = async (contactId, body) => {
+  const contacts = await readFile();
+  const index = contacts.findIndex((contact) => contact.id === contactId);
+
+  if (index === -1) {
+    return null;
+  }
+
+  contacts[index] = { ...contacts[index], ...body };
+
+  await writeFile(contacts);
+
+  return contacts[index];
+};
 
 module.exports = {
   listContacts,
