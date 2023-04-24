@@ -6,15 +6,22 @@ const {
 const { HttpError, ctrlWrapper } = require("../helpers");
 
 const getAll = async (req, res, next) => {
-  const result = await Contact.find();
+  const { _id: owner } = req.user;
+  const result = await Contact.find({ owner });
 
   res.json(result);
 };
 
 const getById = async (req, res, next) => {
-  const result = await Contact.findById(req.params.contactId);
-  
-  if (!result) {
+  const { _id: owner } = req.user;
+  const { contactId } = req.params;
+
+  const result = await Contact.findById(contactId).populate({
+    path: "owner",
+    match: { _id: owner },
+  });
+
+  if (!result || !result.owner) {
     throw HttpError(404, "Not found");
   }
 
@@ -22,19 +29,24 @@ const getById = async (req, res, next) => {
 };
 
 const add = async (req, res, next) => {
-    const { error } = addSchema.validate(req.body);
+  const { error } = addSchema.validate(req.body);
   if (error) {
     throw HttpError(400, "missing required name field");
   }
-
-  const result = await Contact.create(req.body);
+  const { _id: owner } = req.user;
+  const result = await Contact.create({ ...req.body, owner });
   console.log(result);
 
   res.status(201).json(result);
 };
 
 const deleteById = async (req, res, next) => {
-  const result = await Contact.findOneAndRemove({ _id: req.params.contactId });
+  const { _id: owner } = req.user;
+  const { contactId } = req.params;
+  const result = await Contact.findOneAndRemove({
+    _id: contactId,
+    owner,
+  });
   console.log(result);
   if (!result) {
     throw HttpError(404, "Not found");
@@ -50,8 +62,18 @@ const updateById = async (req, res, next) => {
     throw HttpError(400, "missing fields");
   }
 
+  const { _id: owner } = req.user;
   const { contactId } = req.params;
-  const result = await Contact.findByIdAndUpdate(contactId, req.body, {new: true});
+  const result = await Contact.findOneAndUpdate(
+    {
+      _id: contactId,
+      owner,
+    },
+    req.body,
+    {
+      new: true,
+    }
+  );
 
   if (!result) {
     throw HttpError(404, "Not found");
@@ -67,11 +89,19 @@ const updateFavorite = async (req, res, next) => {
     throw HttpError(400, "missing field favorite");
   }
 
+  const { _id: owner } = req.user;
   const { contactId } = req.params;
-  const result = await Contact.findByIdAndUpdate(contactId, req.body, {
-    new: true,
-  });
-  console.log(result)
+  const result = await Contact.findOneAndUpdate(
+    {
+      _id: contactId,
+      owner,
+    },
+    req.body,
+    {
+      new: true,
+    }
+  );
+  console.log(result);
 
   if (!result) {
     throw HttpError(404, "Not found");
