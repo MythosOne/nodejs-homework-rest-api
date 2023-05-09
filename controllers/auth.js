@@ -47,7 +47,7 @@ const register = async (req, res, next) => {
 const verifyEmail = async (req, res, next) => {
   const { verificationToken } = req.params;
   const user = await User.findOne({ verificationToken });
-console.log(verificationToken)
+  console.log(verificationToken);
   if (!user) {
     throw HttpError(404, "User not found");
   }
@@ -82,7 +82,7 @@ const resendVerifyEmail = async (req, res, next) => {
   };
 
   await sendEmail(verifyEmail);
-  
+
   res.json({
     message: "Verification email sent",
   });
@@ -110,7 +110,7 @@ const login = async (req, res, next) => {
     contactId: user._id,
   };
 
-  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "1d" });
+  const token = jwt.sign(payload, SECRET_KEY, { expiresIn: "2d" });
   await User.findByIdAndUpdate(user._id, { token });
 
   res.json({
@@ -154,6 +154,18 @@ const updateAvatar = async (req, res, next) => {
   });
 };
 
+const updateSubscription = async (req, res, next) => {
+  const { subscription } = req.user;
+
+  const result = await User.findOneAndUpdate(subscription, req.body, {new: true});
+
+  if (!result) {
+    throw HttpError(404, "Not found");
+  }
+
+  res.json(result);
+};
+
 module.exports = {
   register: ctrlWrapper(register),
   login: ctrlWrapper(login),
@@ -162,4 +174,5 @@ module.exports = {
   updateAvatar: ctrlWrapper(updateAvatar),
   verifyEmail: ctrlWrapper(verifyEmail),
   resendVerifyEmail: ctrlWrapper(resendVerifyEmail),
+  updateSubscription: ctrlWrapper(updateSubscription),
 };
