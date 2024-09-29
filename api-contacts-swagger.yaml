@@ -9,6 +9,8 @@ servers:
 paths:
   /api/contacts:
     get:
+      tags:
+        - Contacts
       summary: Get list of contacts
       responses:
         "200":
@@ -20,17 +22,60 @@ paths:
                 items:
                   $ref: "#/components/schemas/Contact"
 
-  /api/contacts/:id:
+    post:
+      tags:
+        - Contacts
+      summary: Create a new contact
+      requestBody:
+          description: New Contact Information
+          required: true
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/ContactInput"
+      responses:
+            "201":
+              description: Contact created successfully
+              content:
+                application/json:
+                  schema:
+                    $ref: "#/components/schemas/Contact"
+            "400":
+              description: Invalid Input
+
+  /api/contacts/{id}:
     get:
+      tags:
+        - Contacts
       summary: Get contact by ID
       parameters:
-        - name: id
+        - name: contactId
           in: path
           required: true
           description:  Unique identifier of the contact
           schema:
             type: string
-
+      responses:
+        "200":
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Contact"
+        "404":
+          description: Not Found
+          
+    delete:
+      tags:
+        - Contacts
+      summary: Delete contact by ID
+      parameters:
+        - name: contactId
+          in: path
+          required: true
+          description:  Unique identifier of the contact
+          schema:
+            type: string
       responses:
         "200":
           description: Successful response
@@ -58,9 +103,30 @@ components:
         phone:
           type: string
           description: Contact phone
-        # favorite:
-        #   type: boolean
-        #   description: Favorite Contact
+        favorite:
+          type: boolean
+          description: Favorite Contact
 
       required:
         - name
+        - email
+        - phone
+
+    ContactInput:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Contact name
+        email:
+          type: string
+          description: Contact email
+        phone:
+          type: string
+          description: Contact phone
+          
+      required:
+        - name
+        - email
+        - phone
+
