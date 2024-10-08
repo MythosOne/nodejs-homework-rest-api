@@ -10,15 +10,25 @@ const getAll = async (req, res, next) => {
   const { page = 1, limit = 10 } = req.query;
   const skip = (page - 1) * limit;
   const { favorite } = req.query;
-  const filters = {};
+  // const filters = {};
 
-  if (favorite === "true") {
-    filters.favorite = true;
-  } else if (favorite === "false") {
-    filters.favorite = false;
+  // if (favorite === "true") {
+  //   filters.favorite = true;
+  // } else if (favorite === "false") {
+  //   filters.favorite = false;
+  // }
+
+  // const result = await Contact.find({ owner, ...filters }, "", { skip, limit });
+
+  // res.json(result);
+
+  if (favorite === "true" || favorite === "false") {
+    const result = await Contact.find({ owner, favorite });
+    res.json(result);
+    return;
   }
 
-  const result = await Contact.find({ owner, ...filters }, "", { skip, limit });
+  const result = await Contact.find({ owner }, "", { skip, limit });
 
   res.json(result);
 };
