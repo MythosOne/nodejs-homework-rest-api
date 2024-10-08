@@ -149,12 +149,6 @@ paths:
                     type: string
                     example: "Not found"
 
-# !user/
-#     !/register
-#     !/login
-#     !/logout
-#     !/contacts?
-
   /user/register:
     post:
       tags:
@@ -173,7 +167,7 @@ paths:
           content:
             application/json:
               schema:
-                $ref: "#/components/schemas/User"
+                $ref: "#/components/schemas/UserRegister"
         "400":
           description: Invalid Input
           content:
@@ -235,14 +229,24 @@ paths:
                     type: string
                     example: "Email or password is wrong"
 
-  # /user/logout:
-  #   post:
-  #     tags:
-  #       - User
-  #     summary: Logout user
-  #     responses:
-  #       "204":
-  #         description: User logged out successfully
+  /user/logout:
+    post:
+      tags:
+        - User
+      summary: Logout user
+      responses:
+        "204":
+          description: User logged out successfully
+        "401":
+          description: Unauthorized
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: "Not authorized"
 
 components:
   schemas:
@@ -261,9 +265,12 @@ components:
         phone:
           type: string
           description: Contact phone
-        favorite:
-          type: boolean
-          description: Favorite Contact
+        owner:
+          type: object
+          properties:
+            _id:
+              type: string
+              description: User ID
 
       required:
         - name
@@ -332,3 +339,6 @@ components:
             email:
               type: string
               description: User email
+
+      required:
+        - token
